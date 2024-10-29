@@ -1,3 +1,4 @@
+from typing import List
 from pydantic import BaseModel, field_validator
 
 
@@ -6,6 +7,13 @@ class Book(BaseModel):
     author: str
     year: int
     available: bool
+    categories: List[str]
+
+    @field_validator('categories')
+    def validate_categories(cls, value):
+        if not all(isinstance(cat, str) for cat in value):
+            raise ValueError("Categories must be a list of strings")
+        return value
 
 class User(BaseModel):
     name: str
@@ -18,6 +26,14 @@ class User(BaseModel):
             raise ValueError
         value = value.lower().strip()
         return value
+
+class Library(BaseModel):
+    books: List[Book]
+    users: List[User]
+
+
+
+
 
 if __name__ == '__main__':
     user = User(name='John', email='Gwqa@a.com', membership_id='123456')
