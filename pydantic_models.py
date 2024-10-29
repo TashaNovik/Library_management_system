@@ -17,6 +17,10 @@ class Book(BaseModel):
             raise ValueError("Categories list cannot be empty")
         return value
 
+    def validate_available(self):  # Изменено на обычный метод
+        if not self.available:
+            raise BookNotAvailable(book=self, reason="Книга не доступна.")
+
 class User(BaseModel):
     name: str
     email: str
@@ -36,6 +40,27 @@ class Library(BaseModel):
     def total_books(self) -> int:
         return len(self.books)
 
+class BookNotAvailable(Exception):
+    """
+    Исключение, которое выбрасывается, когда книга не доступна
+    """
+
+    def __init__(self, book: Book, reason: str = "Книга временно недоступна."):
+        """
+        Инициализирует исключение.
+
+        Args:
+            book: Объект книги, который не доступен.
+            Reason: Причина недоступности книги (по умолчанию - "Книга временно недоступна.").
+        """
+        super().__init__(reason)
+        self.book = book
+        self.reason = reason
+
+    def __str__(self):
+        """Возвращает строковое представление исключения."""
+        return f"Книга '{self.book.name}' ({self.book.author}, {self.book.year}) не доступна: {self.reason}"
+
 
 if __name__ == '__main__':
     user = User(name='John', email='Gwqa@a.com', membership_id='123456')
@@ -44,10 +69,15 @@ if __name__ == '__main__':
     print(user.email)
     print(user.membership_id)
 
-    book = Book(name='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, available=True, categories=['Classic', 'Fiction', '20th Century'])
-    print("This is book's info: ")
-    print(book.name)
-    print(book.author)
-    print(book.year)
-    print(book.available)
-    print(book.categories)
+    try:
+        book = Book(name='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, available=False,
+                categories=['Classic', 'Fiction', '20th Century'])
+        book.validate_available()  # Теперь вызываем метод экземпляра
+        print("This is book's info: ")
+        print(book.name)
+        print(book.author)
+        print(book.year)
+        print(book.available)
+        print(book.categories)
+    except BookNotAvailable as e:
+        print(f"Ошибка: {e}")
