@@ -1,6 +1,25 @@
 from typing import List, Optional
 from pydantic_models import Book, BookNotAvailable
 
+import logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+def log_operation(func):
+    """Декоратор для логирования операций с книгами."""
+    logger = logging.getLogger(__name__)
+
+    def wrapper(*args, **kwargs):
+        logger.info(f"Вызов функции: {func.__name__}")
+        logger.debug(f"Аргументы: {args}, {kwargs}")
+
+        result = func(*args, **kwargs)
+
+        logger.info(f"Результат: {result}")
+        return result
+
+    return wrapper
+
 
 class BookManagementSystem:
     def __init__(self):
@@ -9,6 +28,8 @@ class BookManagementSystem:
         """
         self.books: List[Book] = []
 
+
+    @log_operation
     def add_book(self, book: Book) -> bool:
         """
         Добавляет книгу в библиотеку
@@ -21,7 +42,7 @@ class BookManagementSystem:
             return False # book already exists
         self.books.append(book)
         return True
-
+    @log_operation
     def find_book(self, name: str, author: str, year: int) -> Optional[Book]:
         """
         Ищет книгу в библиотеке
@@ -37,7 +58,7 @@ class BookManagementSystem:
                     and book.available):  # Ищем доступную книгу по названию
                 return book
         return None
-
+    @log_operation
     def is_book_borrow(self, name: str, author: str, year: int) -> bool:
         """
                 Проверяет, взята ли книга в данный момент.
@@ -55,7 +76,7 @@ class BookManagementSystem:
                 else:
                     return False  # Книга найдена, но доступна
         raise BookNotAvailable(f"Книга '{name}' автора '{author}' ({year}) не найдена.")
-
+    @log_operation
     def return_book(self, name: str, author: str, year: int) -> bool:
         """
         Возвращает книгу в библиотеку
