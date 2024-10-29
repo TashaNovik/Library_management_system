@@ -1,18 +1,5 @@
 from typing import List, Optional
-
-class Book:
-    def __init__(self, name: str, author: str, year: int, available: bool):
-        """
-        Книга Конструктор
-        :param name:
-        :param author:
-        :param year:
-        :param available:
-        """
-        self.name = name
-        self.author = author
-        self.year = year
-        self.available = available
+from pydantic_models import Book, User
 
 class BookManagementSystem:
     def __init__(self):
@@ -88,24 +75,19 @@ if __name__ == '__main__':
     Пример использования методов, реализованных выше
     """
     library = BookManagementSystem()
-    book1 = Book("The Lord of the Rings", "J. R. R. Tolkien", 1954, True)
-    book2 = Book("The Hitchhiker's Guide to the Galaxy", "Douglas Adams", 1979, True)
+    book1 = Book(name="The Lord of the Rings", author="J. R. R. Tolkien", year=1954, available=True,
+                 categories=['Fantasy', 'Fiction'])
+    book2 = Book(name="The Hitchhiker's Guide to the Galaxy", author="Douglas Adams", year=1979, available=True,
+                 categories=['Science Fiction', 'Comedy'])
 
     library.add_book(book1)
     library.add_book(book2)
 
     found_book = library.find_book("The Lord of the Rings", "J. R. R. Tolkien", 1954)
     if found_book:
-        book1.available = False
+        found_book.available = False
         print(f"Found book: {found_book.name} by {found_book.author} ({found_book.year})")
 
     print(f"Is 'The Hitchhiker's Guide to the Galaxy' borrowed?"
-          f" {library.is_book_borrow('The Hitchhiker\'s Guide to the Galaxy',
-          'Douglas Adams', 1979)}"
-          f"\nIs 'The Lord of the Rings' borrowed? {library.is_book_borrow('The Lord of the Rings', 
-                                                                           "J. R. R. Tolkien", 1954)}")
-
-
-
-
-
+          f" {library.is_book_borrow('The Hitchhiker\'s Guide to the Galaxy', 'Douglas Adams', 1979)}"
+          f"\nIs 'The Lord of the Rings' borrowed? {library.is_book_borrow('The Lord of the Rings', 'J. R. R. Tolkien', 1954)}")

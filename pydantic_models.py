@@ -13,6 +13,8 @@ class Book(BaseModel):
     def validate_categories(cls, value):
         if not all(isinstance(cat, str) for cat in value):
             raise ValueError("Categories must be a list of strings")
+        if not value:  # Проверка на пустой список
+            raise ValueError("Categories list cannot be empty")
         return value
 
 class User(BaseModel):
@@ -42,9 +44,10 @@ if __name__ == '__main__':
     print(user.email)
     print(user.membership_id)
 
-    book = Book(name='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, available=True)
+    book = Book(name='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, available=True, categories=['Classic', 'Fiction', '20th Century'])
     print("This is book's info: ")
     print(book.name)
     print(book.author)
     print(book.year)
     print(book.available)
+    print(book.categories)
