@@ -1,5 +1,6 @@
 from typing import List, Optional
-from pydantic_models import Book, User
+from pydantic_models import Book, BookNotAvailable
+
 
 class BookManagementSystem:
     def __init__(self):
@@ -37,21 +38,23 @@ class BookManagementSystem:
                 return book
         return None
 
-    def is_book_borrow(self ,name: str, author: str, year: int) -> bool:
+    def is_book_borrow(self, name: str, author: str, year: int) -> bool:
         """
-        Проверяет наличие книги в библиотеке
-        :param name:
-        :param author:
-        :param year:
-        :return: True если книга есть в библиотеке, False если нет
-        """
+                Проверяет, взята ли книга в данный момент.
+                :param name:
+                :param author:
+                :param year:
+                :return: True, если книга находится в библиотеке и недоступна, False, если ее нет в библиотеке или она доступна.
+                """
         for book in self.books:
             if (book.name == name
                     and book.author == author
-                    and book.year == year
-                    and not book.available):
-                return True
-        return False
+                    and book.year == year):
+                if not book.available:
+                    return True  # Книга найдена и недоступна
+                else:
+                    return False  # Книга найдена, но доступна
+        raise BookNotAvailable(f"Книга '{name}' автора '{author}' ({year}) не найдена.")
 
     def return_book(self, name: str, author: str, year: int) -> bool:
         """
@@ -72,22 +75,40 @@ class BookManagementSystem:
 
 if __name__ == '__main__':
     """
-    Пример использования методов, реализованных выше
+    Пример использования методов, реализованных выше.
     """
     library = BookManagementSystem()
-    book1 = Book(name="The Lord of the Rings", author="J. R. R. Tolkien", year=1954, available=True,
-                 categories=['Fantasy', 'Fiction'])
-    book2 = Book(name="The Hitchhiker's Guide to the Galaxy", author="Douglas Adams", year=1979, available=True,
-                 categories=['Science Fiction', 'Comedy'])
 
-    library.add_book(book1)
-    library.add_book(book2)
+    # Добавление книг
+    library.add_book(Book(name="Властелин колец", author="Дж. Р. Р. Толкин", year=1954,
+                          available=True, categories=['Фэнтези', 'Художественная литература']))
+    library.add_book(Book(name="Автостопом по галактике", author="Дуглас Адамс",
+                          year=1979, available=True, categories=['Научная фантастика', 'Комедия']))
 
-    found_book = library.find_book("The Lord of the Rings", "J. R. R. Tolkien", 1954)
+    # Найти и взять книгу
+    book_to_borrow = "Властелин колец"
+    found_book = library.find_book(book_to_borrow, "Дж. Р. Р. Толкин", 1954)
     if found_book:
         found_book.available = False
-        print(f"Found book: {found_book.name} by {found_book.author} ({found_book.year})")
+        print(f"Книга '{found_book.name}' успешно взята.")
+    else:
+        print(f"Книга '{book_to_borrow}' не найдена.")
 
-    print(f"Is 'The Hitchhiker's Guide to the Galaxy' borrowed?"
-          f" {library.is_book_borrow('The Hitchhiker\'s Guide to the Galaxy', 'Douglas Adams', 1979)}"
-          f"\nIs 'The Lord of the Rings' borrowed? {library.is_book_borrow('The Lord of the Rings', 'J. R. R. Tolkien', 1954)}")
+    # Проверка доступности книг (включая обработку ошибок)
+    books_to_check = [
+        ("Автостопом по галактике", "Дуглас Адамс", 1979),
+        ("Властелин колец", "Дж. Р. Р. Толкин", 1954)
+    ]
+    for book_name, book_author, book_year in books_to_check:
+        try:
+            is_borrowed = library.is_book_borrow(book_name, book_author, book_year)
+            print(f"Книга '{book_name}' взята: {is_borrowed}")
+        except BookNotAvailable as e:
+            print(f"Ошибка: {e}")
+
+    # Возврат книги
+    book_to_return = "Властелин колец"
+    if library.return_book(book_to_return, "Дж. Р. Р. Толкин", 1954):
+        print(f"Книга '{book_to_return}' успешно возвращена.")
+    else:
+        print(f"Книга '{book_to_return}' не найдена или не была взята.")
