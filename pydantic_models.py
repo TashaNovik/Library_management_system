@@ -31,8 +31,8 @@ class Library(BaseModel):
     books: List[Book]
     users: List[User]
 
-
-
+    def total_books(self) -> int:
+        return len(self.books)
 
 
 if __name__ == '__main__':
